@@ -17,14 +17,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 //Request libraries
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -37,20 +48,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            new Request().execute(new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource=6eb2cc5f1df2fd8d801c9b72758224b2"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String [] ficherosEnDescargas = descargas.list();
         Log.d("fichero","archivos en la carpeta de 'Downloads' = " + ficherosEnDescargas.length);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,ficherosEnDescargas);
         ListView listView = (ListView) findViewById(R.id.files_list);
         listView.setAdapter(adapter);
+
+        try {
+            new Request().execute(new URL("https://www.virustotal.com/vtapi/v2/file/scan"), new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -63,14 +72,50 @@ public class MainActivity extends AppCompatActivity {
 
             final TextView text = (TextView) findViewById(R.id.request);
 
+            HttpURLConnection connectionPost = null;
             HttpURLConnection connection = null;
             try {
-                connection = (HttpURLConnection) urls[0].openConnection();
-            } catch (IOException e) {
+                connectionPost = (HttpURLConnection) urls[0].openConnection();
+                connectionPost.setRequestMethod("POST");
+                connectionPost.setDoInput(true);
+                connectionPost.setDoOutput(true);
+
+                List<AbstractMap.SimpleEntry> params = new ArrayList<AbstractMap.SimpleEntry>();
+                params.add(new AbstractMap.SimpleEntry("apikey", "2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1"));
+                params.add(new AbstractMap.SimpleEntry("file", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).list()[1]));
+
+                OutputStream os = connectionPost.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getQuery(params));
+                writer.flush();
+                writer.close();
+                os.close();
+
+
+                StringBuffer bufferreader = new StringBuffer();
+                InputStream is = connectionPost.getInputStream();
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(is));
+                String line = null;
+                while ((line = reader.readLine()) != null)
+                    bufferreader.append(line + "\r\n");
+                // reading your response
+                JSONObject jsonreader = new JSONObject(bufferreader.toString());
+
+                Log.d("json","respuesta de escaneo' = " + jsonreader.getString("md5"));
+                is.close();
+
+                String reportURLString = urls[1].toString();
+                reportURLString = reportURLString.concat(jsonreader.getString("md5"));
+                URL reportURL = new URL(reportURLString);
+                connection = (HttpURLConnection) reportURL.openConnection();
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
             //connection.setRequestMethod("GET");
             try {
+                connectionPost.connect();
                 connection.connect();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -103,29 +148,6 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
-
-
-/*
-                final Scanner scanner = new Scanner(in);
-                scanner.useDelimiter("\\A");
-
-                boolean hasInput = scanner.hasNext();
-                if (hasInput) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            text.setText(buffer.toString());
-                        }
-                    });
-
-                    return scanner.next();
-                } else {
-                    return null;
-                }
-
-
- */
-
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
@@ -139,6 +161,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-}
+    private String getQuery(List<AbstractMap.SimpleEntry> params) throws UnsupportedEncodingException
+    {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
 
+        for (AbstractMap.SimpleEntry pair : params)
+        {
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode((String) pair.getValue(), "UTF-8"));
+        }
+
+        return result.toString();
+    }
+
+}
 
