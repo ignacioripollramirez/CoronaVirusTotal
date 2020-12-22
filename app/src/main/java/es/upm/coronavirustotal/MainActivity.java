@@ -56,7 +56,15 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         try {
-            new Request().execute(new URL("https://www.virustotal.com/vtapi/v2/file/scan"), new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="));
+            for (int i = 0; i < descargas.list().length; i++) {
+
+                AsyncTask_parameters params = new AsyncTask_parameters(
+                        new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
+                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
+                        descargas.list()[i]);
+                new Request().execute(params);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,25 +72,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    class Request extends AsyncTask<URL, Void, String> {
+    class Request extends AsyncTask<AsyncTask_parameters, Void, String> {
 
         private Exception exception;
 
-        protected String doInBackground(URL... urls) {
+        protected String doInBackground(AsyncTask_parameters... async_parameters) {
+
+            URL url_scan = async_parameters[0].url_scan;
+            URL url_retrieve_report = async_parameters[0].url_retrieve_report;
+            String file_path = async_parameters[0].file_path;
+            Log.d("file","file' = " + file_path);
 
             final TextView text = (TextView) findViewById(R.id.request);
 
             HttpURLConnection connectionPost = null;
             HttpURLConnection connection = null;
             try {
-                connectionPost = (HttpURLConnection) urls[0].openConnection();
+                connectionPost = (HttpURLConnection) url_scan.openConnection();
                 connectionPost.setRequestMethod("POST");
                 connectionPost.setDoInput(true);
                 connectionPost.setDoOutput(true);
 
                 List<AbstractMap.SimpleEntry> params = new ArrayList<AbstractMap.SimpleEntry>();
                 params.add(new AbstractMap.SimpleEntry("apikey", "2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1"));
-                params.add(new AbstractMap.SimpleEntry("file", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).list()[1]));
+                params.add(new AbstractMap.SimpleEntry("file", file_path));
 
                 OutputStream os = connectionPost.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(
@@ -106,9 +119,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("json","respuesta de escaneo' = " + jsonreader.getString("md5"));
                 is.close();
 
-                String reportURLString = urls[1].toString();
+                String reportURLString = url_retrieve_report.toString();
                 reportURLString = reportURLString.concat(jsonreader.getString("md5"));
                 URL reportURL = new URL(reportURLString);
+                Log.d("url: ", "> " + reportURL);
                 connection = (HttpURLConnection) reportURL.openConnection();
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
@@ -136,14 +150,13 @@ public class MainActivity extends AppCompatActivity {
 
                 while ((line = reader.readLine()) != null) {
                     buffer.append(line+"\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
                 }
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         text.setText(buffer.toString());
+                        Log.d("Response: ", "> " + buffer.toString());   //here u ll get whole response...... :-)
                     }
                 });
 
@@ -180,6 +193,19 @@ public class MainActivity extends AppCompatActivity {
 
         return result.toString();
     }
+
+    private static class AsyncTask_parameters {
+        URL url_scan;
+        URL url_retrieve_report;
+        String file_path;
+
+        AsyncTask_parameters(URL url_scan, URL url_retrieve_report, String file_path) {
+            this.url_scan = url_scan;
+            this.url_retrieve_report = url_retrieve_report;
+            this.file_path = file_path;
+        }
+    }
+
 
 }
 
