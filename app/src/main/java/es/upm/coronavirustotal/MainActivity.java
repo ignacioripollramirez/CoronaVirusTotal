@@ -5,11 +5,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -50,18 +53,32 @@ public class MainActivity extends AppCompatActivity {
 
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String [] ficherosEnDescargas = descargas.list();
-        Log.d("fichero","archivos en la carpeta de 'Downloads' = " + ficherosEnDescargas.length);
+        //Log.d("fichero","archivos en la carpeta de 'Downloads' = " + ficherosEnDescargas.length);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,ficherosEnDescargas);
         ListView listView = (ListView) findViewById(R.id.files_list);
         listView.setAdapter(adapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // selected item
+                String file = ((TextView) view).getText().toString();
+
+                // Launching new Activity on selecting single List Item
+                Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
+                // sending data to new activity
+                myIntent.putExtra("nombre del fichero", file);
+                startActivity(myIntent);
+            }
+        });
+
         try {
-            for (int i = 0; i < descargas.list().length; i++) {
+            for (int i = 0; i < ficherosEnDescargas.length; i++) {
 
                 AsyncTask_parameters params = new AsyncTask_parameters(
                         new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
                         new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
-                        descargas.list()[i]);
+                        ficherosEnDescargas[i]);
                 new Request().execute(params);
             }
 
