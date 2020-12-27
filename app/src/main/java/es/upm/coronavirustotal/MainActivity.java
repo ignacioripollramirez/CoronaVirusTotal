@@ -13,6 +13,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -78,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(myIntent);
             }
         });
+
         notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
 
         try {
@@ -90,6 +98,12 @@ public class MainActivity extends AppCompatActivity {
                 new Request().execute(params);
             }
 
+            Context context = getApplicationContext();
+            DB_Antivirus database_antivirus = new DB_Antivirus(context);
+            database_antivirus.createRecords(1, 1, "Avast", "No hay virus");
+            database_antivirus.createRecords(1, 2, "Karsperky", "Virus detectado");
+            Log.d("database","database' = " + database_antivirus.selectRecords().getString(1));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,11 +111,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    class Request extends AsyncTask<AsyncTask_parameters, Void, String> {
+    class Request extends AsyncTask<AsyncTask_parameters, Void, String>
+    {
 
         private Exception exception;
 
-        protected String doInBackground(AsyncTask_parameters... async_parameters) {
+        protected String doInBackground(AsyncTask_parameters... async_parameters)
+        {
 
             URL url_scan = async_parameters[0].url_scan;
             URL url_retrieve_report = async_parameters[0].url_retrieve_report;
@@ -141,13 +157,13 @@ public class MainActivity extends AppCompatActivity {
                 // reading your response
                 JSONObject jsonreader = new JSONObject(bufferreader.toString());
 
-                Log.d("json","respuesta de escaneo' = " + jsonreader.getString("md5"));
+                //Log.d("json","respuesta de escaneo' = " + jsonreader.getString("md5"));
                 is.close();
 
                 String reportURLString = url_retrieve_report.toString();
                 reportURLString = reportURLString.concat(jsonreader.getString("md5"));
                 URL reportURL = new URL(reportURLString);
-                Log.d("url: ", "> " + reportURL);
+                //Log.d("url: ", "> " + reportURL);
                 connection = (HttpURLConnection) reportURL.openConnection();
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
@@ -181,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         text.setText(buffer.toString());
-                        Log.d("Response: ", "> " + buffer.toString());   //here u ll get whole response...... :-)
+                        //Log.d("Response: ", "> " + buffer.toString());   //here u ll get whole response...... :-)
                     }
                 });
 
@@ -219,7 +235,8 @@ public class MainActivity extends AppCompatActivity {
         return result.toString();
     }
 
-    private static class AsyncTask_parameters {
+    private static class AsyncTask_parameters
+    {
         URL url_scan;
         URL url_retrieve_report;
         String file_path;
@@ -257,6 +274,86 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify(1, notification);
     }
 
+
+    public class DatabaseHelper extends SQLiteOpenHelper
+    {
+        private static final String DATABASE_NAME = "DB_CoronaVirus";
+
+        private static final int DATABASE_VERSION = 1;
+
+        // Database creation sql statement
+        private static final String DATABASE_CREATE = "create table T_ANTIVIRUS( _id_file integer, _id_antivirus integer, antivirus text not null, result text not null, PRIMARY KEY (_id_file, _id_antivirus));";
+
+        public DatabaseHelper(Context context) {
+            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        }
+
+        // Method is called during creation of the database
+        @Override
+        public void onCreate(SQLiteDatabase database) {
+            database.execSQL("DROP TABLE IF EXISTS T_ANTIVIRUS");
+            database.execSQL(DATABASE_CREATE);
+        }
+
+        // Method is called during an upgrade of the database,
+        @Override
+        public void onUpgrade(SQLiteDatabase database,int oldVersion,int newVersion){
+            Log.w(DatabaseHelper.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
+            database.execSQL("DROP TABLE IF EXISTS T_ANTIVIRUS");
+            onCreate(database);
+        }
+    }
+
+    public class DB_Antivirus
+    {
+
+        private DatabaseHelper dbHelper;
+
+        private SQLiteDatabase database;
+
+        public final static String ANTIVIRUS_TABLE="T_ANTIVIRUS"; // name of table
+
+        public final static String FILE_ID="_id_file"; // id value for antivirus
+        public final static String ANTIVIRUS_ID="_id_antivirus"; // id value for antivirus
+        public final static String ANTIVIRUS_NAME="antivirus";  // name of antivirus
+        public final static String ANTIVIRUS_RESULT="result";  // result of antivirus
+
+        /**
+         *
+         * @param context
+         */
+        public DB_Antivirus(Context context){
+            dbHelper = new DatabaseHelper(context);
+            database = dbHelper.getWritableDatabase();
+            dbHelper.onCreate(database);
+        }
+
+
+        public long createRecords(int id_file, int id_antivirus, String name, String result){
+            ContentValues values = new ContentValues();
+            values.put(FILE_ID, id_file);
+            values.put(ANTIVIRUS_ID, id_antivirus);
+            values.put(ANTIVIRUS_NAME, name);
+            values.put(ANTIVIRUS_RESULT, result);
+            return database.insert(ANTIVIRUS_TABLE, null, values);
+        }
+
+        public Cursor selectRecords() {
+            String[] cols = new String[] {FILE_ID, ANTIVIRUS_ID, ANTIVIRUS_NAME, ANTIVIRUS_RESULT};
+            Cursor mCursor = database.query(false, ANTIVIRUS_TABLE, cols,null, null, null, null, null, null);
+            if (!mCursor.moveToFirst()) {
+                return null;
+            }
+
+            while (!mCursor.isAfterLast()) {
+                Log.d("database","database' = " + mCursor.getString(3));
+                mCursor.moveToNext();
+            }
+            mCursor.moveToFirst();
+
+            return mCursor;
+        }
+    }
 
 }
 
