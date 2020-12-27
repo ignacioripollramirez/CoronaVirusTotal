@@ -2,11 +2,17 @@ package es.upm.coronavirustotal;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +24,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 //Request libraries
 import org.json.JSONException;
@@ -71,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(myIntent);
             }
         });
+        notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
 
         try {
             for (int i = 0; i < ficherosEnDescargas.length; i++) {
@@ -221,6 +229,32 @@ public class MainActivity extends AppCompatActivity {
             this.url_retrieve_report = url_retrieve_report;
             this.file_path = file_path;
         }
+    }
+
+    void toast_Message (String text){
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+    void notification (String text, String file) {
+        // Launching new Activity on selecting single List Item
+        Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
+        // sending data to new activity
+        myIntent.putExtra("nombre del fichero", file);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 2, myIntent, 0);
+
+        Notification notification = new NotificationCompat.Builder(this)
+                .setCategory(Notification.CATEGORY_PROMO)
+                .setContentTitle("Virus detected")
+                .setContentText(text)
+                .setSmallIcon(R.drawable.coronavirus_logo)
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .addAction(android.R.drawable.ic_menu_view, "See File", contentIntent)
+                .setContentIntent(contentIntent)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000}).build();
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
     }
 
 
