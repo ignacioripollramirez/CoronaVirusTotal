@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
         myIntent.putExtra("nombre del fichero", file);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 2, myIntent, 0);
 
-        Notification notification = new NotificationCompat.Builder(this)
+        Notification notification = new NotificationCompat.Builder(this,"1")
                 .setCategory(Notification.CATEGORY_PROMO)
                 .setContentTitle("Alert, Virus detected!")
                 .setContentText(text)

@@ -18,8 +18,7 @@ public class AntiVirusService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-// TODO: ESCRIBIR AQUI EL CODIGO QUE QUEREMOS QUE EJECUTE EL SERVICIO
-
+// TODO: ESCRIBIR AQUI EL CODIGO DEL SERVICIO
     }
 
 }
