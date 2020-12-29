@@ -42,14 +42,15 @@ import java.net.URLEncoder;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends AppCompatActivity {
 
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -76,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
         notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
 
+        Context context = getApplicationContext();
+        DB_Antivirus database_antivirus = new DB_Antivirus(context);
         try {
             for (int i = 0; i < ficherosEnDescargas.length; i++) {
 
@@ -84,15 +87,22 @@ public class MainActivity extends AppCompatActivity {
                         new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
                         ficherosEnDescargas[i]);
                 new Request().execute(params);
+
+                Log.d("return","return' = " + new Request().execute(params).get());
+                database_antivirus.createRecords(new Request().execute(params).get(), "Avast", 1, "dariofile.pdf");
+                database_antivirus.createRecords(new Request().execute(params).get(), "Kaspersky", 1, "dariofile.pdf");
+                database_antivirus.createRecords(new Request().execute(params).get(), "Windows", 1, "dariofile.pdf");
             }
 
-            Context context = getApplicationContext();
-            DB_Antivirus database_antivirus = new DB_Antivirus(context);
-            database_antivirus.createRecords(1, 1, "Avast", "No hay virus");
-            database_antivirus.createRecords(1, 2, "Karsperky", "Virus detectado");
-            Log.d("database","database' = " + database_antivirus.selectRecords().getString(1));
+            database_antivirus.createRecords("2", "Todos", 0, "nachofile.pdf");
+
+            Log.d("database","database' = " + database_antivirus.selectRecords().getString(3));
 
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -106,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
         protected String doInBackground(AsyncTask_parameters... async_parameters)
         {
-
+            JSONObject jsonreader = null;
             URL url_scan = async_parameters[0].url_scan;
             URL url_retrieve_report = async_parameters[0].url_retrieve_report;
             String file_path = async_parameters[0].file_path;
@@ -143,9 +153,9 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null)
                     bufferreader.append(line + "\r\n");
                 // reading your response
-                JSONObject jsonreader = new JSONObject(bufferreader.toString());
+                jsonreader = new JSONObject(bufferreader.toString());
 
-                //Log.d("json","respuesta de escaneo' = " + jsonreader.getString("md5"));
+                //Log.d("return","return' = " + jsonreader.getString("md5"));
                 is.close();
 
                 String reportURLString = url_retrieve_report.toString();
@@ -156,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
-            //connection.setRequestMethod("GET");
             try {
                 connectionPost.connect();
                 connection.connect();
@@ -189,15 +198,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+                //Log.d("return","return log' = " + jsonreader.getString("md5"));
+                return null;
+
 
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             } finally {
                 connection.disconnect();
-                return null;
+                try {
+                    return jsonreader.getString("md5");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-
 
         }
 
@@ -276,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         private static final int DATABASE_VERSION = 1;
 
         // Database creation sql statement
-        private static final String DATABASE_CREATE = "create table T_ANTIVIRUS( _id_file integer, _id_antivirus integer, antivirus text not null, result text not null, PRIMARY KEY (_id_file, _id_antivirus));";
+        private static final String DATABASE_CREATE = "create table T_ANTIVIRUS( _id_file text not null, _id_antivirus_name text, result integer, file_name text, PRIMARY KEY (_id_file, _id_antivirus_name));";
 
         public DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -308,9 +323,10 @@ public class MainActivity extends AppCompatActivity {
         public final static String ANTIVIRUS_TABLE="T_ANTIVIRUS"; // name of table
 
         public final static String FILE_ID="_id_file"; // id value for antivirus
-        public final static String ANTIVIRUS_ID="_id_antivirus"; // id value for antivirus
-        public final static String ANTIVIRUS_NAME="antivirus";  // name of antivirus
+        public final static String ANTIVIRUS_ID="_id_antivirus_name"; // id value for antivirus
         public final static String ANTIVIRUS_RESULT="result";  // result of antivirus
+        public final static String FILE_NAME="file_name";  // name of antivirus
+
 
         /**
          *
@@ -319,21 +335,22 @@ public class MainActivity extends AppCompatActivity {
         public DB_Antivirus(Context context){
             dbHelper = new DatabaseHelper(context);
             database = dbHelper.getWritableDatabase();
+            database.execSQL("DROP TABLE IF EXISTS T_ANTIVIRUS");
             dbHelper.onCreate(database);
         }
 
 
-        public long createRecords(int id_file, int id_antivirus, String name, String result){
+        public long createRecords(String id_file, String id_antivirus_name, int result, String name){
             ContentValues values = new ContentValues();
             values.put(FILE_ID, id_file);
-            values.put(ANTIVIRUS_ID, id_antivirus);
-            values.put(ANTIVIRUS_NAME, name);
+            values.put(ANTIVIRUS_ID, id_antivirus_name);
             values.put(ANTIVIRUS_RESULT, result);
+            values.put(FILE_NAME, name);
             return database.insert(ANTIVIRUS_TABLE, null, values);
         }
 
         public Cursor selectRecords() {
-            String[] cols = new String[] {FILE_ID, ANTIVIRUS_ID, ANTIVIRUS_NAME, ANTIVIRUS_RESULT};
+            String[] cols = new String[] {FILE_ID, ANTIVIRUS_ID, ANTIVIRUS_RESULT, FILE_NAME};
             Cursor mCursor = database.query(false, ANTIVIRUS_TABLE, cols,null, null, null, null, null, null);
             if (!mCursor.moveToFirst()) {
                 return null;
