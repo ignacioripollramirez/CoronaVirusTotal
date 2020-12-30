@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">CoronaVirusTotal</string>
     <string name="Title">Coronavirus Total</string>
+    <string name="Fields_FileActivity">Hash | Antivirus | Result | File Name</string>
 </resources>

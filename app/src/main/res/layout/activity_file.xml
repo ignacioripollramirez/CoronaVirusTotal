@@ -11,15 +11,15 @@
         android:id="@+id/file_name"
         android:layout_width="379dp"
         android:layout_height="53dp"
-        app:layout_constraintBottom_toTopOf="@+id/analysis_result"
+        android:gravity="center"
+        android:textColor="#3800b3"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo"
-        android:gravity="center"
-        android:textStyle="bold"
-        android:textColor="#3800b3"
-        android:textSize="16sp"
-        app:layout_constraintVertical_bias="0.333" />
+        app:layout_constraintVertical_bias="0.084" />
 
     <ImageView
         android:id="@+id/logo"
@@ -35,15 +35,18 @@
 
     <GridView
         android:id="@+id/analysis_result"
-        android:layout_width="345dp"
-        android:layout_height="401dp"
+        android:layout_width="400dp"
+        android:layout_height="320dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:horizontalSpacing="10dp"
-        android:numColumns="2"
+        android:numColumns="4"
         android:scrollbars="vertical"
         android:verticalSpacing="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo"
+        app:layout_constraintTop_toBottomOf="@+id/file_name"
         app:layout_constraintVertical_bias="1.0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
