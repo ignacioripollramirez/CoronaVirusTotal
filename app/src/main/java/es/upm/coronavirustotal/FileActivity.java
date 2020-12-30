@@ -38,7 +38,10 @@ public class FileActivity extends AppCompatActivity {
                 //antivirus_results[i]=fila.getString(0);
                 antivirus_results[i]=fila.getString(0).substring(0,7);
                 antivirus_results[i+1]=fila.getString(1);
-                antivirus_results[i+2]=fila.getString(2);
+                if(fila.getInt(2)==1)
+                    antivirus_results[i+2]="Virus Detected";
+                else
+                    antivirus_results[i+2]="No Virus Detected";
                 antivirus_results[i+3]=fila.getString(3);
                 Log.d("campos", fila.getString(0));
                 Log.d("campos", fila.getString(1));
