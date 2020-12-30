@@ -32,6 +32,7 @@ public class FileActivity extends AppCompatActivity {
         if(base_de_datos!=null){
             Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='dariofile.pdf'",null);
             fila.moveToFirst();
+            file_name.setText(value+"\nMD5 -> "+fila.getString(0)+"\n\nHash MD5 | Antivirus | Result | File Name");
             antivirus_results = new String[fila.getCount()*4]; //Por 4 ya que cada tupla de la BBDD tiene 4 columnas
             for (int j=0, i = 0; j<fila.getCount();j++, i=i+4) { //Mas 4 para ir avanzando de tupla en tupla
                 //antivirus_results[i]=fila.getString(0);
