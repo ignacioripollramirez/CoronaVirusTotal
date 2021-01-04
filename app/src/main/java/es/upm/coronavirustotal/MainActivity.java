@@ -57,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Cogemos la API key, si no existe llevamos al usuario a la activity LOGIN
-        SharedPreferences preferencia =
-                getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
+        SharedPreferences preferencia = getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
+        //API KEY DEL USUARIO
         String key = preferencia.getString("api_key","0");
-        //Si el usuario ya introdujo una key
+        //Si el usuario ya introdujo una KEY no le llevamos a LOGIN (saltamos el if)
         if(key.equals("0")) {
             Intent myIntent = new Intent(getApplicationContext(), Login.class);
             startActivity(myIntent);
