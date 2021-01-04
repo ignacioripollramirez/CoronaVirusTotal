@@ -19,6 +19,9 @@ public class AntiVirusService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 // TODO: ESCRIBIR AQUI EL CODIGO DEL SERVICIO
+        Log.d("servicio","mensaje del servicio");
+
     }
+
 
 }

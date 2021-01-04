@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,9 +56,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Cogemos la API key, si no existe llevamos al usuario a la activity LOGIN
+        SharedPreferences preferencia =
+                getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
+        String key = preferencia.getString("api_key","0");
+        //Si el usuario ya introdujo una key
+        if(key.equals("0")) {
+            Intent myIntent = new Intent(getApplicationContext(), Login.class);
+            startActivity(myIntent);
+        }
+
+        //Borro la api key anterior en cada ejecucion para las PRUEBAS
+        SharedPreferences.Editor editor = preferencia.edit();
+        editor.remove("api_key");
+        editor.commit();
+
+
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String [] ficherosEnDescargas = descargas.list();
-        //Log.d("fichero","archivos en la carpeta de 'Downloads' = " + ficherosEnDescargas.length);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,ficherosEnDescargas);
         ListView listView = (ListView) findViewById(R.id.files_list);
         listView.setAdapter(adapter);
@@ -278,8 +295,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         Intent passDataIntent = new Intent(this, AntiVirusService.class);
         startService(passDataIntent);
     }
