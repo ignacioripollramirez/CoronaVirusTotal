@@ -8,11 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ContentValues;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         String key = preferencia.getString("api_key","0");
         //Si el usuario ya introdujo una KEY no le llevamos a LOGIN (saltamos el if)
         if(key.equals("0")) {
-            Intent myIntent = new Intent(getApplicationContext(), Login.class);
+            Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(myIntent);
         }
 
