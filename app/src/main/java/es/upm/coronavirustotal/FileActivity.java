@@ -30,7 +30,7 @@ public class FileActivity extends AppCompatActivity {
         SQLiteDatabase base_de_datos = admin.getReadableDatabase();
         String[] antivirus_results = null;
         if(base_de_datos!=null){
-            Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='dariofile.pdf'",null);
+            Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='"+value+"'",null);
             fila.moveToFirst();
             file_name.setText(value+"\nMD5 -> "+fila.getString(0)+"\n\nHash MD5 | Antivirus | Result | File Name");
             antivirus_results = new String[fila.getCount()*4]; //Por 4 ya que cada tupla de la BBDD tiene 4 columnas
