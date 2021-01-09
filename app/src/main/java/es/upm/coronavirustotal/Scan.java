@@ -1,5 +1,9 @@
 package es.upm.coronavirustotal;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
@@ -31,18 +35,51 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
     public AsyncResponse delegate = null;
     File file_path_global = null;
     String file_path_string_global = null;
+    private ProgressDialog pd;
 
-    protected String doInBackground(AsyncTask_parameters... async_parameters)
-    {
+    public Scan(MainActivity activity) {
+        pd = new ProgressDialog(activity);
+    }
+
+    @Override
+    protected void onPreExecute() {
+        pd.setMessage("Scanning...");
+        pd.show();
+    }
+
+    protected String doInBackground(AsyncTask_parameters... async_parameters) {
+
         JSONObject jsonreader = null;
         URL url_scan = async_parameters[0].url_scan;
         File file_path = async_parameters[0].file_path;
         String file_path_string = async_parameters[0].file_path_string;
         file_path_global = file_path;
         file_path_string_global = file_path_string;
+        Context context = async_parameters[0].context;
+
+
+
+
+        DatabaseHelper admin = new DatabaseHelper(context);
+        SQLiteDatabase base_de_datos = admin.getReadableDatabase();
+        String[] antivirus_results = null;
+        if(base_de_datos!=null){
+            Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='"+file_path_string+"'",null);
+            Log.d("asynctask", "asynctask = " + fila.getCount());
+            if (fila.getCount() != 0) {
+                if (pd.isShowing()) {
+                    pd.dismiss();
+                }
+                this.cancel(true);
+            }
+        }
+
+
 
         HttpURLConnection connectionPost = null;
         try {
+
+
             connectionPost = (HttpURLConnection) url_scan.openConnection();
             connectionPost.setRequestMethod("POST");
             connectionPost.setDoInput(true);
@@ -75,6 +112,9 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
 
         } catch (IOException | JSONException e) {
             e.printStackTrace();
+            if (pd.isShowing()) {
+                pd.dismiss();
+            }
         }
         try {
             connectionPost.connect();
@@ -94,7 +134,15 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
 
     @Override
     protected void onPostExecute(String result) {
+
+        if (pd.isShowing()) {
+            pd.dismiss();
+        }
+
         Log.d("Scan result","Scan result' = " + result);
+        Log.d("Scan result","Scan result' = " + file_path_global);
+        Log.d("Scan result","Scan result' = " + file_path_string_global);
+        Log.d("Scan result","Scan result' = " + delegate);
         try {
             delegate.Scan_Finish(result, file_path_global, file_path_string_global);
         } catch (MalformedURLException e) {
@@ -112,14 +160,18 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
             if (first)
                 first = false;
             else
-                result.append("&");
+                result.append("");
 
-            result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode((String) pair.getValue().toString(), "UTF-8"));
+            //result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
+            //result.append("=");
+            //result.append(pair.getValue().toString());
+            //result.append(URLEncoder.encode((String) pair.getValue().toString(), "UTF-8"));
         }
 
+        result.append("apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&file=%2Fstorage%2Fsdcard%2FDownload%2F1.+Introduction+to+Android+Components.pdf");
+        Log.d("url","url' = " + result.toString());
         return result.toString();
     }
+
 
 }

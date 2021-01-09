@@ -19,13 +19,22 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
     JSONObject json_response = null;
     Context context;
     DB_Antivirus database_antivirus;
+    MainActivity main_activity;
+    String pathString_global;
+    String key;
 
-    public DirectoryObserver(String path) {
+
+    public DirectoryObserver(String path, MainActivity activity) {
         super(path);
+        main_activity = activity;
     }
 
     @Override
     public void onEvent(int event, String pathString) {
+
+        String api_key = main_activity.getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE).getString("api_key","0");
+        key = api_key;
+
         event &= FileObserver.ALL_EVENTS;
         switch (event) {
             case FileObserver.DELETE_SELF:
@@ -37,7 +46,7 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                 Log.d("observer","observer' = " + pathString);
                 Log.d("observer","observer' = " + getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()));
 
-
+                pathString_global = pathString;
                 AsyncTask_parameters params = null;
                 try {
                     params = new AsyncTask_parameters(
@@ -45,14 +54,35 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                             new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
                             getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
                             null,
-                            pathString);
+                            pathString,
+                            context);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
 
-                Scan ScanTask = new Scan();
-                ScanTask.delegate = this;
-                ScanTask.execute(params);
+
+                main_activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Scan ScanTask = new Scan(main_activity);
+                        ScanTask.delegate = main_activity;
+                        AsyncTask_parameters params = null;
+                        try {
+                            Log.d("Observer", "Observer = " + pathString_global);
+                            params = new AsyncTask_parameters(
+                                    new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
+                                    new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + key + "&resource="),
+                                    getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
+                                    null,
+                                    pathString_global,
+                                    context);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                        ScanTask.execute(params);
+                    }
+                });
+
+
 
 
 
@@ -86,18 +116,20 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
         return chosenFile;
     }
 
+
     @Override
     public void Scan_Finish(String output, File file, String file_path_string) throws MalformedURLException {
         md5_hash = output;
         File file_path = file;
-        Request RequestTask = new Request();
+        Request RequestTask = new Request(main_activity);
         RequestTask.delegate = this;
         AsyncTask_parameters params = new AsyncTask_parameters(
                 new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
                 new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
                 file_path,
                 md5_hash,
-                file_path_string);
+                file_path_string,
+                context);
 
         RequestTask.execute(params);
     }

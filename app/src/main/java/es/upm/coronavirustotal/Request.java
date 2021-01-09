@@ -1,5 +1,6 @@
 package es.upm.coronavirustotal;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
@@ -22,10 +23,21 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
     public AsyncResponse delegate = null;
     File file_path_global = null;
     String file_path_string_global = null;
+    private ProgressDialog pd;
+
+    public Request(MainActivity activity) {
+        pd = new ProgressDialog(activity);
+    }
+
+    @Override
+    protected void onPreExecute() {
+        pd.setMessage("Requesting report...");
+        pd.show();
+    }
 
     protected JSONObject doInBackground(AsyncTask_parameters... async_parameters)
     {
-        SystemClock.sleep(90000);
+        SystemClock.sleep(10000);
         JSONObject jsonreader = null;
         URL url_scan = async_parameters[0].url_scan;
         URL url_retrieve_report = async_parameters[0].url_retrieve_report;
@@ -99,6 +111,11 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
 
     @Override
     protected void onPostExecute(JSONObject result) {
+
+        if (pd.isShowing()) {
+            pd.dismiss();
+        }
+
         Log.d("Request result","Request result' = " + result);
         try {
             delegate.Request_Finish(result, file_path_global, file_path_string_global);

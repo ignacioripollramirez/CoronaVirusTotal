@@ -12,7 +12,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final int DATABASE_VERSION = 1;
 
     // Database creation sql statement
-    private static final String DATABASE_CREATE = "create table T_ANTIVIRUS( _id_file text not null, _id_antivirus_name text, result integer, file_name text, PRIMARY KEY (_id_file, _id_antivirus_name));";
+    private static final String DATABASE_CREATE = "create table T_ANTIVIRUS( _id_file text not null, _id_antivirus_name text, result integer, file_name text, PRIMARY KEY (_id_file, _id_antivirus_name, file_name));";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

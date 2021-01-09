@@ -28,8 +28,8 @@ public class DB_Antivirus
     public DB_Antivirus(Context context){
         dbHelper = new DatabaseHelper(context);
         database = dbHelper.getWritableDatabase();
-        database.execSQL("DROP TABLE IF EXISTS T_ANTIVIRUS");
-        dbHelper.onCreate(database);
+        //database.execSQL("DROP TABLE IF EXISTS T_ANTIVIRUS");
+        //dbHelper.onCreate(database);
     }
 
 
@@ -39,6 +39,7 @@ public class DB_Antivirus
         values.put(ANTIVIRUS_ID, id_antivirus_name);
         values.put(ANTIVIRUS_RESULT, result);
         values.put(FILE_NAME, name);
+        Log.d("database", "database" + values);
         return database.insert(ANTIVIRUS_TABLE, null, values);
     }
 

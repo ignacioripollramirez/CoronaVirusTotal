@@ -7,21 +7,6 @@
     android:background="#fcb8b3"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/request"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:text="Escriba el mensaje y luego clickee el canal a ser enviado"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo"
-        app:layout_constraintVertical_bias="0.852"
-        tools:ignore="MissingConstraints" />
-
     <ImageView
         android:id="@+id/logo"
         android:layout_width="280dp"

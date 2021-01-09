@@ -5,11 +5,17 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -25,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
@@ -38,36 +45,38 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     JSONObject json_response = null;
     Context context = null;
     DB_Antivirus database_antivirus = null;
-    DirectoryObserver downloads_observer = new DirectoryObserver(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+    DirectoryObserver downloads_observer = new DirectoryObserver(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString(), this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         downloads_observer.startWatching();
-/*
+
         //Cogemos la API key, si no existe llevamos al usuario a la activity LOGIN
         SharedPreferences preferencia = getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
         //API KEY DEL USUARIO
         String key = preferencia.getString("api_key","0");
         //Si el usuario ya introdujo una KEY no le llevamos a LOGIN (saltamos el if)
+
         if(key.equals("0")) {
             Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(myIntent);
         }
 
         //Borro la api key anterior en cada ejecucion para las PRUEBAS
-        SharedPreferences.Editor editor = preferencia.edit();
-        editor.remove("api_key");
-        editor.commit();
-*/
+        //SharedPreferences.Editor editor = preferencia.edit();
+        //editor.remove("api_key");
+        //editor.commit();
+
 
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String[] ficherosEnDescargas = descargas.list();
         File[] ficherosEnDescargas_File = descargas.listFiles();
 
-        notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
+        //notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
         //eicar(this,"virus.txt","X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
         //Log.d("eicar","X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
@@ -78,16 +87,18 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         downloads_observer.database_antivirus = database_antivirus;
 
         try {
-            for (int i = 0; i < ficherosEnDescargas.length; i++) {
+            Log.d("key", "key = " + key);
+            for (int i = 0; i < ficherosEnDescargas.length && !key.equals("0"); i++) {
 
                 AsyncTask_parameters params = new AsyncTask_parameters(
                         new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
+                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + key + "&resource="),
                         ficherosEnDescargas_File[i],
                         null,
-                        ficherosEnDescargas[i]);
+                        ficherosEnDescargas[i],
+                        context);
 
-                Scan ScanTask = new Scan();
+                Scan ScanTask = new Scan(this);
                 ScanTask.delegate = this;
                 ScanTask.execute(params);
             }
@@ -104,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     void toast_Message (String text){
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
-    void notification (String text, String file) {
+    void notification (String text, String file, String title) {
         // Launching new Activity on selecting single List Item
         Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
         // sending data to new activity
@@ -113,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
         Notification notification = new NotificationCompat.Builder(this,"1")
                 .setCategory(Notification.CATEGORY_PROMO)
-                .setContentTitle("Alert, Virus detected!")
+                .setContentTitle(title)
                 .setContentText(text)
                 .setSmallIcon(R.drawable.coronavirus_logo)
                 .setAutoCancel(true)
@@ -138,14 +149,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     public void Scan_Finish(String output, File file, String file_path_string) throws MalformedURLException {
         md5_hash = output;
         File file_path = file;
-        Request RequestTask = new Request();
+        Request RequestTask = new Request(this);
         RequestTask.delegate = this;
         AsyncTask_parameters params = new AsyncTask_parameters(
                 new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
                 new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
                 file_path,
                 md5_hash,
-                file_path_string);
+                file_path_string,
+                context);
 
         RequestTask.execute(params);
     }
@@ -173,6 +185,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
             if (!any_detected){
                 database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), "Todos", 0, file_path_string);
+                notification("No se ha detectado ningún virus en "+ file_path_string,file_path_string, "¡Archivo seguro!");
+            } else {
+                notification("Virus detectado en el archivo "+ file_path_string,file_path_string, "¡Alerta, virus detectado!");
             }
         }
     }
