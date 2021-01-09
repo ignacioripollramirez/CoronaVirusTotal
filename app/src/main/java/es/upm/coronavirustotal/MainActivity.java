@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
@@ -102,6 +104,27 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 ScanTask.delegate = this;
                 ScanTask.execute(params);
             }
+
+//SIMULACIÓN DEL VIRUS EN EL ARCHIVO Lil Vit - LeClub.mp3
+            // Instrucciones
+            // 1 -> Ejecutar la aplicación al menos una vez para incluir los siguientes registros en BBDD
+            // 2 -> Descargar el archivo Lil Vit - LeClub.mp3 del correo para incluir el archivo en la carpeta de descargas.
+            if(database_antivirus!=null){
+                DatabaseHelper admin = new DatabaseHelper(context);
+                SQLiteDatabase base_de_datos = admin.getReadableDatabase();
+                    Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name="+"'Lil Vit - LeClub.mp3'",null);
+                    Log.d("asynctask", "asynctask = " + fila.getCount());
+                    if (fila.getCount() == 0) {
+                        database_antivirus.createRecords("123456", "Avast", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("123456", "Bkav", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("123456", "Kaspersky", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("123456", "BitDefender", 1, "Lil Vit - LeClub.mp3");
+                    }
+            }
+
+
+
+
 
 //            Log.d("database","database' = " + database_antivirus.selectRecords().getString(3));
 
