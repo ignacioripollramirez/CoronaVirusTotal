@@ -2,40 +2,31 @@ package es.upm.coronavirustotal;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.FileObserver;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
 
 //Request libraries
 
@@ -208,10 +199,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             if (!any_detected){
                 database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), "All", 0, file_path_string);
                 //Toast.makeText(this, "El archivo "+file_path_string+" no contiene virus", Toast.LENGTH_SHORT).show();
-                notification("No Virus: "+file_path_string,file_path_string, "¡Archivo seguro!");
-                Log.d("nombre_fichero",file_path_string);
+                notification("No Virus: "+file_path_string,file_path_string, "Safe File!");
             } else {
-                notification("Virus detectado en el archivo "+ file_path_string,file_path_string, "¡Alerta, virus detectado!");
+                notification("Virus Detected: "+ file_path_string,file_path_string, "Infected File!");
             }
         }
     }
