@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     Context context = null;
     DB_Antivirus database_antivirus = null;
     DirectoryObserver downloads_observer = new DirectoryObserver(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString(), this);
-
+    String api_key = null;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -51,10 +51,11 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         //Cogemos la API key, si no existe llevamos al usuario a la activity LOGIN
         SharedPreferences preferencia = getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
         //API KEY DEL USUARIO
-        String key = preferencia.getString("api_key","0");
+        api_key = preferencia.getString("api_key","0");
+
         //Si el usuario ya introdujo una KEY no le llevamos a LOGIN (saltamos el if)
 
-        if(key.equals("0")) {
+        if(api_key.equals("0")) {
             Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(myIntent);
         }
@@ -80,12 +81,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         downloads_observer.database_antivirus = database_antivirus;
 
         try {
-            Log.d("key", "key = " + key);
-            for (int i = 0; i < ficherosEnDescargas.length && !key.equals("0"); i++) {
+            Log.d("key", "key = " + api_key);
+            for (int i = 0; i < ficherosEnDescargas.length && !api_key.equals("0"); i++) {
 
                 AsyncTask_parameters params = new AsyncTask_parameters(
                         new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + key + "&resource="),
+                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + api_key + "&resource="),
                         ficherosEnDescargas_File[i],
                         null,
                         ficherosEnDescargas[i],
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         RequestTask.delegate = this;
         AsyncTask_parameters params = new AsyncTask_parameters(
                 new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
+                new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey="+api_key+"&resource="),
                 file_path,
                 md5_hash,
                 file_path_string,
