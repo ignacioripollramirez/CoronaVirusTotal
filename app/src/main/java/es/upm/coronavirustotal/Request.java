@@ -37,7 +37,7 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
 
     protected JSONObject doInBackground(AsyncTask_parameters... async_parameters)
     {
-        SystemClock.sleep(10000);
+        SystemClock.sleep(30000);
         JSONObject jsonreader = null;
         URL url_scan = async_parameters[0].url_scan;
         URL url_retrieve_report = async_parameters[0].url_retrieve_report;

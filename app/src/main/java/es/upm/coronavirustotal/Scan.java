@@ -72,6 +72,8 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
                 }
                 this.cancel(true);
             }
+            fila.close();
+            base_de_datos.close();
         }
 
 
@@ -160,15 +162,14 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
             if (first)
                 first = false;
             else
-                result.append("");
+                result.append("&");
 
-            //result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
-            //result.append("=");
+            result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
+            result.append("=");
             //result.append(pair.getValue().toString());
-            //result.append(URLEncoder.encode((String) pair.getValue().toString(), "UTF-8"));
+            result.append(URLEncoder.encode((String) pair.getValue().toString(), "UTF-8"));
         }
 
-        result.append("apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&file=%2Fstorage%2Fsdcard%2FDownload%2F1.+Introduction+to+Android+Components.pdf");
         Log.d("url","url' = " + result.toString());
         return result.toString();
     }

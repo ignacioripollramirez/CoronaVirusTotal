@@ -115,11 +115,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name="+"'Lil Vit - LeClub.mp3'",null);
                     Log.d("asynctask", "asynctask = " + fila.getCount());
                     if (fila.getCount() == 0) {
-                        database_antivirus.createRecords("123456", "Avast", 1, "Lil Vit - LeClub.mp3");
-                        database_antivirus.createRecords("123456", "Bkav", 1, "Lil Vit - LeClub.mp3");
-                        database_antivirus.createRecords("123456", "Kaspersky", 1, "Lil Vit - LeClub.mp3");
-                        database_antivirus.createRecords("123456", "BitDefender", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("1234567", "Avast", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("1234567", "Bkav", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("1234567", "Kaspersky", 1, "Lil Vit - LeClub.mp3");
+                        database_antivirus.createRecords("1234567", "BitDefender", 1, "Lil Vit - LeClub.mp3");
                     }
+                    fila.close();
+                    base_de_datos.close();
             }
 
 
@@ -135,15 +137,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     }
 
 
-    void toast_Message (String text){
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-    }
     void notification (String text, String file, String title) {
         // Launching new Activity on selecting single List Item
-        Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
+        //Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
         // sending data to new activity
-        myIntent.putExtra("nombre del fichero", file);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 2, myIntent, 0);
+        //myIntent.putExtra("nombre del fichero", file);
+       // PendingIntent contentIntent = PendingIntent.getActivity(this, 2, myIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this,"1")
                 .setCategory(Notification.CATEGORY_PROMO)
@@ -152,21 +151,21 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 .setSmallIcon(R.drawable.coronavirus_logo)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .addAction(android.R.drawable.ic_menu_view, "See File", contentIntent)
-                .setContentIntent(contentIntent)
+                //.addAction(android.R.drawable.ic_menu_view, "See File", contentIntent)
+               // .setContentIntent(contentIntent)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000}).build();
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
-
+/*
     @Override
     protected void onStart() {
         super.onStart();
         Intent passDataIntent = new Intent(this, AntiVirusService.class);
         startService(passDataIntent);
-    }
+    }*/
 
     @Override
     public void Scan_Finish(String output, File file, String file_path_string) throws MalformedURLException {
@@ -207,8 +206,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             }
 
             if (!any_detected){
-                database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), "Todos", 0, file_path_string);
-                notification("No se ha detectado ningún virus en "+ file_path_string,file_path_string, "¡Archivo seguro!");
+                database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), "All", 0, file_path_string);
+                //Toast.makeText(this, "El archivo "+file_path_string+" no contiene virus", Toast.LENGTH_SHORT).show();
+                notification("No Virus: "+file_path_string,file_path_string, "¡Archivo seguro!");
+                Log.d("nombre_fichero",file_path_string);
             } else {
                 notification("Virus detectado en el archivo "+ file_path_string,file_path_string, "¡Alerta, virus detectado!");
             }

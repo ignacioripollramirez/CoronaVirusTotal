@@ -43,7 +43,7 @@ public class DB_Antivirus
         return database.insert(ANTIVIRUS_TABLE, null, values);
     }
 
-    public Cursor selectRecords() {
+    /*public Cursor selectRecords() {
         String[] cols = new String[] {FILE_ID, ANTIVIRUS_ID, ANTIVIRUS_RESULT, FILE_NAME};
         Cursor mCursor = database.query(false, ANTIVIRUS_TABLE, cols,null, null, null, null, null, null);
         if (!mCursor.moveToFirst()) {
@@ -57,5 +57,5 @@ public class DB_Antivirus
         mCursor.moveToFirst();
 
         return mCursor;
-    }
+    }*/
 }

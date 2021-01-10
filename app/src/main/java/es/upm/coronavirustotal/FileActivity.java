@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -31,6 +32,10 @@ public class FileActivity extends AppCompatActivity {
         String[] antivirus_results = null;
         if(base_de_datos!=null){
             Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='"+value+"'",null);
+            if (fila.getCount()<1) {
+                launchAPP();
+                return;
+            }
             fila.moveToFirst();
             file_name.setText(value+"\nMD5 -> "+fila.getString(0)+"\n\nHash MD5 | Antivirus | Result | File Name");
             antivirus_results = new String[fila.getCount()*4]; //Por 4 ya que cada tupla de la BBDD tiene 4 columnas
@@ -51,10 +56,17 @@ public class FileActivity extends AppCompatActivity {
             }
 
             fila.close();
+            base_de_datos.close();
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,antivirus_results);
         GridView gridView = findViewById(R.id.analysis_result);
         gridView.setAdapter(adapter);
 
+    }
+
+    private void launchAPP(){
+        Toast.makeText(this, "The file has not been scanned yet", Toast.LENGTH_LONG).show();
+        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(myIntent);
     }
 }
