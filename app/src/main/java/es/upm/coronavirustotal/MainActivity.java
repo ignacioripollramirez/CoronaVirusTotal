@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         setContentView(R.layout.activity_main);
 
         downloads_observer.startWatching();
-
         //Cogemos la API key, si no existe llevamos al usuario a la activity LOGIN
         SharedPreferences preferencia = getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE);
         //API KEY DEL USUARIO
@@ -233,21 +232,14 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         });
     }
 
-    /*public void eicar(Context context, String sFileName, String sBody) {
-        try {
+  /*  public void eicar(Context context, String sFileName, String sBody) {
             File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             if (!root.exists()) {
                 root.mkdirs();
             }
             File gpxfile = new File(root, sFileName);
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append(sBody);
-            writer.flush();
-            writer.close();
-            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            gpxfile.delete();
+
     }*/
 }
 
