@@ -21,7 +21,7 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
     DB_Antivirus database_antivirus;
     MainActivity main_activity;
     String pathString_global;
-    String key;
+    String api_key;
 
 
     public DirectoryObserver(String path, MainActivity activity) {
@@ -32,8 +32,7 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
     @Override
     public void onEvent(int event, String pathString) {
 
-        String api_key = main_activity.getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE).getString("api_key","0");
-        key = api_key;
+        api_key = main_activity.getSharedPreferences("MiPreferencia", Context.MODE_PRIVATE).getString("api_key","0");
 
         event &= FileObserver.ALL_EVENTS;
         switch (event) {
@@ -51,11 +50,12 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                 try {
                     params = new AsyncTask_parameters(
                             new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                            new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
+                            new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey="+api_key+"&resource="),
                             getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
                             null,
                             pathString,
-                            context);
+                            context,
+                            api_key);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
@@ -70,11 +70,12 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                             Log.d("Observer", "Observer = " + pathString_global);
                             params = new AsyncTask_parameters(
                                     new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                                    new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + key + "&resource="),
+                                    new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + api_key + "&resource="),
                                     getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
                                     null,
                                     pathString_global,
-                                    context);
+                                    context,
+                                    api_key);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
@@ -129,7 +130,8 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                 file_path,
                 md5_hash,
                 file_path_string,
-                context);
+                context,
+                api_key);
 
         RequestTask.execute(params);
     }

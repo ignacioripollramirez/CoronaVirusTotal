@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                         ficherosEnDescargas_File[i],
                         null,
                         ficherosEnDescargas[i],
-                        context);
+                        context,
+                        api_key);
 
                 Scan ScanTask = new Scan(this);
                 ScanTask.delegate = this;
@@ -170,7 +171,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 file_path,
                 md5_hash,
                 file_path_string,
-                context);
+                context,
+                api_key);
 
         RequestTask.execute(params);
     }
