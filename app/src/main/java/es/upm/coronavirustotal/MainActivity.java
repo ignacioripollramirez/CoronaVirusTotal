@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,11 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 
-//Request libraries
-
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse {
-
 
     String md5_hash = null;
     JSONObject json_response = null;
@@ -59,20 +55,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             startActivity(myIntent);
         }
 
-        //Borro la api key anterior en cada ejecucion para las PRUEBAS
-        //SharedPreferences.Editor editor = preferencia.edit();
-        //editor.remove("api_key");
-        //editor.commit();
-
-
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String[] ficherosEnDescargas = descargas.list();
         File[] ficherosEnDescargas_File = descargas.listFiles();
-
-        //notification("Virus has been detected on file"+"dario.pdf","dario.pdf");
-        //eicar(this,"virus.txt","X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
-        //Log.d("eicar","X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
-
 
         context = getApplicationContext();
         database_antivirus = new DB_Antivirus(context);
@@ -80,12 +65,11 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         downloads_observer.database_antivirus = database_antivirus;
 
         try {
-            Log.d("key", "key = " + api_key);
             for (int i = 0; i < ficherosEnDescargas.length && !api_key.equals("0"); i++) {
 
                 AsyncTask_parameters params = new AsyncTask_parameters(
-                        new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                        new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + api_key + "&resource="),
+                        new URL(getString(R.string.url_scan)),
+                        new URL(getString(R.string.url_report) + api_key + "&resource="),
                         ficherosEnDescargas_File[i],
                         null,
                         ficherosEnDescargas[i],
@@ -105,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 DatabaseHelper admin = new DatabaseHelper(context);
                 SQLiteDatabase base_de_datos = admin.getReadableDatabase();
                     Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name="+"'Lil Vit - LeClub.mp3'",null);
-                    Log.d("asynctask", "asynctask = " + fila.getCount());
                     if (fila.getCount() == 0) {
                         database_antivirus.createRecords("1234567", "Avast", 1, "Lil Vit - LeClub.mp3");
                         database_antivirus.createRecords("1234567", "Bkav", 1, "Lil Vit - LeClub.mp3");
@@ -116,12 +99,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     base_de_datos.close();
             }
 
-
-
-
-
-//            Log.d("database","database' = " + database_antivirus.selectRecords().getString(3));
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -130,12 +107,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
 
     void notification (String text, String file, String title) {
-        // Launching new Activity on selecting single List Item
-        //Intent myIntent = new Intent(getApplicationContext(), FileActivity.class);
-        // sending data to new activity
-        //myIntent.putExtra("nombre del fichero", file);
-       // PendingIntent contentIntent = PendingIntent.getActivity(this, 2, myIntent, 0);
-
         Notification notification = new NotificationCompat.Builder(this,"1")
                 .setCategory(Notification.CATEGORY_PROMO)
                 .setContentTitle(title)
@@ -143,21 +114,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 .setSmallIcon(R.drawable.coronavirus_logo)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                //.addAction(android.R.drawable.ic_menu_view, "See File", contentIntent)
-               // .setContentIntent(contentIntent)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000}).build();
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
-/*
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Intent passDataIntent = new Intent(this, AntiVirusService.class);
-        startService(passDataIntent);
-    }*/
 
     @Override
     public void Scan_Finish(String output, File file, String file_path_string) throws MalformedURLException {
@@ -166,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         Request RequestTask = new Request(this);
         RequestTask.delegate = this;
         AsyncTask_parameters params = new AsyncTask_parameters(
-                new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey="+api_key+"&resource="),
+                new URL(getString(R.string.url_scan)),
+                new URL(getString(R.string.url_report)+api_key+"&resource="),
                 file_path,
                 md5_hash,
                 file_path_string,
@@ -183,15 +145,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
 
         if (json_response != null){
-            //Log.d("json","json' = " + json_response.getJSONObject("scans"));
 
             Iterator<String> keys_scans = json_response.getJSONObject("scans").keys();
             boolean any_detected = false;
 
             while(keys_scans.hasNext()) {
                 String key_scans = keys_scans.next();
-                Log.d("json","json' = " + key_scans + " -> " + json_response.getJSONObject("scans").getJSONObject(key_scans).getString("detected"));
-                //if (json_response.getJSONObject("scans").get(key_scans) instanceof JSONObject)
                 if (json_response.getJSONObject("scans").getJSONObject(key_scans).getString("detected") == "true"){
                     database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), key_scans, 1, file_path_string);
                     any_detected = true;
@@ -199,11 +158,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             }
 
             if (!any_detected){
-                database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), "All", 0, file_path_string);
-                //Toast.makeText(this, "El archivo "+file_path_string+" no contiene virus", Toast.LENGTH_SHORT).show();
-                notification("No Virus: "+file_path_string,file_path_string, "Safe File!");
+                database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), getString(R.string.res_all), 0, file_path_string);
+                notification(getString(R.string.res_no_virus)+file_path_string,file_path_string, getString(R.string.res_safe_file));
             } else {
-                notification("Virus Detected: "+ file_path_string,file_path_string, "Infected File!");
+                notification(getString(R.string.res_virus_detected)+ file_path_string,file_path_string, getString(R.string.res_infected_file));
             }
         }
     }
@@ -213,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         super.onResume();
         File descargas = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String[] ficherosEnDescargas = descargas.list();
-        File[] ficherosEnDescargas_File = descargas.listFiles();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,ficherosEnDescargas);
         ListView listView = (ListView) findViewById(R.id.files_list);
@@ -234,15 +191,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         });
     }
 
-  /*  public void eicar(Context context, String sFileName, String sBody) {
-            File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-            File gpxfile = new File(root, sFileName);
-            gpxfile.delete();
-
-    }*/
 }
 
 

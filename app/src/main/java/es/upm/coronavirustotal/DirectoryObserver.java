@@ -36,21 +36,15 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
 
         event &= FileObserver.ALL_EVENTS;
         switch (event) {
-            case FileObserver.DELETE_SELF:
-                //do stuff
-                break;
 
             case FileObserver.CREATE:
-                Log.d("observer","observer' = " + "Se ha descargado un nuevo archivo");
-                Log.d("observer","observer' = " + pathString);
-                Log.d("observer","observer' = " + getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()));
 
                 pathString_global = pathString;
-                AsyncTask_parameters params = null;
                 try {
+                    AsyncTask_parameters params = null;
                     params = new AsyncTask_parameters(
-                            new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                            new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey="+api_key+"&resource="),
+                            new URL(context.getString(R.string.url_scan)),
+                            new URL(context.getString(R.string.url_report)+api_key+"&resource="),
                             getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
                             null,
                             pathString,
@@ -67,10 +61,9 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                         ScanTask.delegate = main_activity;
                         AsyncTask_parameters params = null;
                         try {
-                            Log.d("Observer", "Observer = " + pathString_global);
                             params = new AsyncTask_parameters(
-                                    new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                                    new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + api_key + "&resource="),
+                                    new URL(context.getString(R.string.url_scan)),
+                                    new URL(context.getString(R.string.url_report) + api_key + "&resource="),
                                     getLastModified(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()),
                                     null,
                                     pathString_global,
@@ -83,14 +76,6 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
                     }
                 });
 
-
-
-
-
-
-                break;
-            case FileObserver.DELETE:
-                Log.d("observer","observer' = " + "Se ha borrado un archivo");
                 break;
         }
     }
@@ -125,8 +110,8 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
         Request RequestTask = new Request(main_activity);
         RequestTask.delegate = this;
         AsyncTask_parameters params = new AsyncTask_parameters(
-                new URL("https://www.virustotal.com/vtapi/v2/file/scan"),
-                new URL("https://www.virustotal.com/vtapi/v2/file/report?apikey=2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1&resource="),
+                new URL(context.getString(R.string.url_scan)),
+                new URL(context.getString(R.string.url_report)+api_key+"&resource="),
                 file_path,
                 md5_hash,
                 file_path_string,
@@ -143,15 +128,12 @@ public class DirectoryObserver extends FileObserver implements AsyncResponse{
 
 
         if (json_response != null){
-            //Log.d("json","json' = " + json_response.getJSONObject("scans"));
 
             Iterator<String> keys_scans = json_response.getJSONObject("scans").keys();
             boolean any_detected = false;
 
             while(keys_scans.hasNext()) {
                 String key_scans = keys_scans.next();
-                Log.d("json","json' = " + key_scans + " -> " + json_response.getJSONObject("scans").getJSONObject(key_scans).getString("detected"));
-                //if (json_response.getJSONObject("scans").get(key_scans) instanceof JSONObject)
                 if (json_response.getJSONObject("scans").getJSONObject(key_scans).getString("detected") == "true"){
                     database_antivirus.createRecords(new get_MD5_hash().calculateMD5(file_path), key_scans, 1, file_path_string);
                     any_detected = true;

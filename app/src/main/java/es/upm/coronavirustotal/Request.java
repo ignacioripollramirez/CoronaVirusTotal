@@ -3,8 +3,6 @@ package es.upm.coronavirustotal;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.SystemClock;
-import android.util.Log;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,8 +36,6 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
     protected JSONObject doInBackground(AsyncTask_parameters... async_parameters)
     {
         SystemClock.sleep(30000);
-        JSONObject jsonreader = null;
-        URL url_scan = async_parameters[0].url_scan;
         URL url_retrieve_report = async_parameters[0].url_retrieve_report;
         File file_path = async_parameters[0].file_path;
         String md5_hash = async_parameters[0].md5_hash;
@@ -47,7 +43,6 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
         file_path_global = file_path;
         file_path_string_global = file_path_string;
 
-        //final TextView text = (TextView) findViewById(R.id.request);
         final StringBuffer buffer = new StringBuffer();
 
         HttpURLConnection connection = null;
@@ -55,7 +50,6 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
             String reportURLString = url_retrieve_report.toString();
             reportURLString = reportURLString.concat(md5_hash);
             URL reportURL = new URL(reportURLString);
-            Log.d("json: ", "> " + reportURL);
             connection = (HttpURLConnection) reportURL.openConnection();
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,17 +76,6 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
                 buffer.append(line+"\n");
             }
 
-            /*
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //text.setText(buffer.toString());
-                    Log.d("Response: ", "> " + buffer.toString());   //here u ll get whole response...... :-)
-                }
-            });
-             */
-
-            //Log.d("return","return log' = " + jsonreader.getString("md5"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -116,7 +99,6 @@ public class Request extends AsyncTask<AsyncTask_parameters, Void, JSONObject>
             pd.dismiss();
         }
 
-        Log.d("Request result","Request result' = " + result);
         try {
             delegate.Request_Finish(result, file_path_global, file_path_string_global);
         } catch (JSONException e) {

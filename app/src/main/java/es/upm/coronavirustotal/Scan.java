@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.SystemClock;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +34,7 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
     public AsyncResponse delegate = null;
     File file_path_global = null;
     String file_path_string_global = null;
+    String api_key = null;
     private ProgressDialog pd;
 
     public Scan(MainActivity activity) {
@@ -48,7 +48,7 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
     }
 
     protected String doInBackground(AsyncTask_parameters... async_parameters) {
-
+        
         JSONObject jsonreader = null;
         URL url_scan = async_parameters[0].url_scan;
         File file_path = async_parameters[0].file_path;
@@ -56,16 +56,15 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
         file_path_global = file_path;
         file_path_string_global = file_path_string;
         Context context = async_parameters[0].context;
+        api_key = async_parameters[0].api_key;
 
 
 
 
         DatabaseHelper admin = new DatabaseHelper(context);
         SQLiteDatabase base_de_datos = admin.getReadableDatabase();
-        String[] antivirus_results = null;
         if(base_de_datos!=null){
             Cursor fila = base_de_datos.rawQuery("Select * from T_ANTIVIRUS where file_name='"+file_path_string+"'",null);
-            Log.d("asynctask", "asynctask = " + fila.getCount());
             if (fila.getCount() != 0) {
                 if (pd.isShowing()) {
                     pd.dismiss();
@@ -88,7 +87,7 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
             connectionPost.setDoOutput(true);
 
             List<AbstractMap.SimpleEntry> params = new ArrayList<AbstractMap.SimpleEntry>();
-            params.add(new AbstractMap.SimpleEntry("apikey", "2abf2d86fc5ffb6e31404851bdd50f519d9fc4a3aba4263e0b034c69b7d4c1d1"));
+            params.add(new AbstractMap.SimpleEntry("apikey", api_key));
             params.add(new AbstractMap.SimpleEntry("file", file_path));
 
             OutputStream os = connectionPost.getOutputStream();
@@ -109,7 +108,6 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
             // reading your response
             jsonreader = new JSONObject(bufferreader.toString());
 
-            //Log.d("return","return' = " + jsonreader.getString("md5"));
             is.close();
 
         } catch (IOException | JSONException e) {
@@ -141,10 +139,6 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
             pd.dismiss();
         }
 
-        Log.d("Scan result","Scan result' = " + result);
-        Log.d("Scan result","Scan result' = " + file_path_global);
-        Log.d("Scan result","Scan result' = " + file_path_string_global);
-        Log.d("Scan result","Scan result' = " + delegate);
         try {
             delegate.Scan_Finish(result, file_path_global, file_path_string_global);
         } catch (MalformedURLException e) {
@@ -166,11 +160,9 @@ public class Scan extends AsyncTask<AsyncTask_parameters, Void, String>
 
             result.append(URLEncoder.encode((String) pair.getKey(), "UTF-8"));
             result.append("=");
-            //result.append(pair.getValue().toString());
-            result.append(URLEncoder.encode((String) pair.getValue().toString(), "UTF-8"));
+            result.append(URLEncoder.encode(pair.getValue().toString(), "UTF-8"));
         }
 
-        Log.d("url","url' = " + result.toString());
         return result.toString();
     }
 

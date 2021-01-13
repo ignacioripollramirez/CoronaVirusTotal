@@ -3,4 +3,14 @@
     <string name="Title">Coronavirus Total</string>
     <string name="Fields_FileActivity">Hash | Antivirus | Result | File Name</string>
     <string name="api_key_text">Please, Insert your API KEY:</string>
+    <string name="url_scan">https://www.virustotal.com/vtapi/v2/file/scan</string>
+    <string name="url_report">https://www.virustotal.com/vtapi/v2/file/report?apikey=</string>
+    <string name="res_all">All</string>
+    <string name="res_safe_file">Safe File!</string>
+    <string name="res_no_virus">\"No Virus: \"</string>
+    <string name="res_virus_detected">\"Virus Detected: \"</string>
+    <string name="res_infected_file">Infected File!</string>
+    <string name="res_headers">\nHash MD5 | Antivirus | Result | File Name</string>
+    <string name="res_no_virus_detected">No Virus Detected</string>
+    <string name="res_file_not_scanned_yet">The file has not been scanned yet</string>
 </resources>
